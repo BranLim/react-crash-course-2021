@@ -1,8 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect } from "react";
 
-import Header from './components/Header'
-import Tasks from './components/Tasks'
-import AddTasks from './components/AddTasks'
+import Header from "./components/Header";
+import Tasks from "./components/Tasks";
+import AddTasks from "./components/AddTasks";
 
 function App() {
   const [showAddTask, setShowAddTask] = useState(false);
@@ -10,44 +10,56 @@ function App() {
 
   useEffect(() => {
     const getTasks = async () => {
-      const tasksFromServer = await fetchTasks()
-      setTasks(tasksFromServer)
-    }
-    getTasks()
-  }, [])
+      const tasksFromServer = await fetchTasks();
+      setTasks(tasksFromServer);
+    };
+    getTasks();
+  }, []);
 
   const fetchTasks = async () => {
-    const res = await fetch('http://localhost:5000/tasks')
+    const res = await fetch("http://localhost:5000/tasks");
     const data = await res.json();
-    return data
-  }
+    return data;
+  };
 
-  const addTask = (task) => {
-    const id = Math.floor(Math.random() * 10000) + 1;
-    const newTask = { id, ...task }
-    setTasks([...tasks, newTask]);
-  }
+  const addTask = async (task) => {
+    const res = await fetch("http://localhost:5000/tasks", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(task),
+    });
+
+    const data = await res.json();
+
+    setTasks([...tasks, data]);
+  };
 
   const deleteTask = async (id) => {
-    await fetch(`http://localhost:5000/tasks/${id}`, { method: 'DELETE' })
+    await fetch(`http://localhost:5000/tasks/${id}`, { method: "DELETE" });
     setTasks(tasks.filter((task) => task.id !== id));
-  }
+  };
 
   const toggleReminder = (id) => {
-    setTasks(tasks.map((task) => task.id === id ? { ...task, reminder: !task.reminder } : task));
-
-  }
+    setTasks(
+      tasks.map((task) =>
+        task.id === id ? { ...task, reminder: !task.reminder } : task
+      )
+    );
+  };
 
   return (
     <div className="container">
-      <Header title="Task Tracker" onAdd={() => setShowAddTask(!showAddTask)} showAdd={showAddTask} />
+      <Header
+        title="Task Tracker"
+        onAdd={() => setShowAddTask(!showAddTask)}
+        showAdd={showAddTask}
+      />
       {showAddTask && <AddTasks onAdd={addTask} />}
-      {
-        tasks.length > 0
-          ? (<Tasks tasks={tasks} onDelete={deleteTask} onToggle={toggleReminder} />)
-          : ('No Tasks To Show')
-      }
-
+      {tasks.length > 0 ? (
+        <Tasks tasks={tasks} onDelete={deleteTask} onToggle={toggleReminder} />
+      ) : (
+        "No Tasks To Show"
+      )}
     </div>
   );
 }
